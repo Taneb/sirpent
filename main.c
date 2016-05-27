@@ -42,7 +42,7 @@ int is_out_of_bounds(int x_coord, int y_coord) {
 
 void update_world() {
   int x; int y;
-  struct linked_list * snakes_to_remove = 0;
+  struct linked_list * snakes_to_remove = new();
   for (x = 0; x < GRID_SIZE; x++) {
     for (y = 0; y < GRID_SIZE; y++) {
       if (grid0[x][y]) {
