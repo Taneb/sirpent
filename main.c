@@ -160,6 +160,12 @@ void update_world() {
       }
     }
   }
+  
+  while(snakes_to_remove) {
+    struct linked_list * tmp = snakes_to_remove;
+    free(snakes_to_remove);
+    snakes_to_remove = tmp;
+  }
 }
 
 int main() {
