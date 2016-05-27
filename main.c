@@ -123,7 +123,7 @@ void update_world() {
 	grid2[x][y] = 0;
       }
       else {
-	grid0[x][y] = grid1[x][y];
+	grid0[x][y] = 0;
       }
       if (grid0[x][y]) {
 	grid0[x][y]->x_coord = x;
