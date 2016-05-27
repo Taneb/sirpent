@@ -12,8 +12,8 @@ struct snake {
 
 struct snake_segment {
   struct snake * snake_id;
-  struct snake_segment * forward; // nullptr if head
-  struct snake_segment * rearward; // nullptr if tip of tail
+  struct snake_segment * forward; /* nullptr if head */
+  struct snake_segment * rearward; /* nullptr if tip of tail */
   int x_coord;
   int y_coord;
 };
@@ -47,12 +47,12 @@ void update_world() {
     for (y = 0; y < GRID_SIZE; y++) {
       if (grid0[x][y]) {
 	if (grid0[x][y]->forward) {
-	  // we are in the tail of a snake
+	  /* we are in the tail of a snake */
 	  struct snake_segment forward = *grid0[x][y]->forward;
 	  grid1[forward.x_coord][forward.y_coord] = grid0[x][y];
 	}
 	else {
-	  // we are in the head of a snake
+	  /* we are in the head of a snake */
 	  direction which_way = ask_direction(*grid0[x][y]->snake_id);
 	  int new_x = x, new_y = y;
 	  switch (which_way) {
