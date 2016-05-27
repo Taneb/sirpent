@@ -1,4 +1,7 @@
 #include <stdlib.h>
+
+#include "list.h"
+
 #define GRID_SIZE 300
 
 struct snake {
@@ -18,20 +21,6 @@ struct snake_segment {
 static struct snake_segment * grid0 [GRID_SIZE][GRID_SIZE];
 static struct snake_segment * grid1 [GRID_SIZE][GRID_SIZE];
 static struct snake_segment * grid2 [GRID_SIZE][GRID_SIZE];
-
-struct linked_list {
-  struct snake * value; /* not sure this is a good type to have for a value? */
-  struct linked_list * next;
-};
-
-struct linked_list * prepend(struct snake * value, struct linked_list * tail) {
-  struct linked_list * result = (struct linked_list *)malloc(sizeof(struct linked_list));
-  /* hope to high hell this doesn't fail because I can't be bothered to check for that */
-  
-  result->value = value;
-  result->next = tail;
-  return result;
-}
 
 typedef enum {
   NORTH,
@@ -114,16 +103,7 @@ void update_world() {
   for (x = 0; x < GRID_SIZE; x++) {
     for (y = 0; y < GRID_SIZE; y++) {
       if (grid1[x][y]) {
-	struct linked_list * i = snakes_to_remove;
-	int should_remove_segment = 0;
-	while (i) {
-	  if (grid1[x][y]->snake_id == i->value) {
-	    should_remove_segment = 1;
-	    break;
-	  }
-	  i = i->next;
-	}
-	if (should_remove_segment) {
+	if (search(grid1[x][y]->snake_id, snakes_to_remove)) {
 	  grid0[x][y] = 0;
 	  free(grid1[x][y]);
 	}
@@ -133,16 +113,7 @@ void update_world() {
 	grid1[x][y] = 0;
       }
       else if (grid2[x][y]) {
-	struct linked_list * i = snakes_to_remove;
-	int should_remove_segment = 0;
-	while (i) {
-	  if (grid2[x][y]->snake_id == i->value) {
-	    should_remove_segment = 1;
-	    break;
-	  }
-	  i = i->next;
-	}
-	if (should_remove_segment) {
+	if (search(grid2[x][y]->snake_id, snakes_to_remove)) {
 	  grid0[x][y] = 0;
 	  free(grid2[x][y]);
 	}
@@ -160,12 +131,8 @@ void update_world() {
       }
     }
   }
-  
-  while(snakes_to_remove) {
-    struct linked_list * tmp = snakes_to_remove;
-    free(snakes_to_remove);
-    snakes_to_remove = tmp;
-  }
+
+  destroy(snakes_to_remove);
 }
 
 int main() {
