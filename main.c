@@ -1,118 +1,101 @@
 #include <stdlib.h>
 
-#include "list.h"
+#include "main.h"
 
-#define GRID_SIZE 300
-
-struct snake {
-  int snake_id;
-  struct snake_segment * head;
-  /* also put some network stuff here */
-};
-
-struct snake_segment {
-  struct snake * snake_id;
-  struct snake_segment * forward; /* nullptr if head */
-  struct snake_segment * rearward; /* nullptr if tip of tail */
-  struct vector location;
-};
-
-static struct snake_segment * grid0 [GRID_SIZE][GRID_SIZE];
-static struct snake_segment * grid1 [GRID_SIZE][GRID_SIZE];
-static struct snake_segment * grid2 [GRID_SIZE][GRID_SIZE];
-
-typedef enum {
-  NORTH,
-  NORTHEAST,
-  SOUTHEAST,
-  SOUTH,
-  SOUTHWEST,
-  NORTHWEST
-} direction;
-
-struct vector {
-  int x, y;
-};
-
-direction ask_direction(struct snake snake) {
-  /* TODO actually ask */
+direction ask_direction(snake *snake) {
+  /* @TODO actually ask */
   return SOUTH;
 }
 
-int is_out_of_bounds(struct vector cell) {
-  return cell.x < 0 || cell.x >= GRID_SIZE || cell.y < 0 || cell.y >= GRID_SIZE;
+void remove_snake(snake *snake) {
+  /* @TODO */
 }
 
-struct vector neighbour(struct vector cell, direction to_neighbour) {
-  struct vector neighbour = cell;
-  switch (to_neighbour) {
-  case NORTH:
-    neighbour.y--;
-    break;
-  case NORTHEAST:
-    neighbour.x++;
-    neighbour.y--;
-    break;
-  case SOUTHEAST:
-    neighbour.x++;
-    break;
-  case SOUTH:
-    neighbour.y++;
-    break;
-  case SOUTHWEST:
-    neighbour.x--;
-    neighbour.y++;
-    break;
-  case NORTHWEST:
-    neighbour.x--;
-    break;
-  }
-  return neighbour;
-}
-
-void update_world() {
-  int s;
-  for (s = 0; s < snakes_len; s++) {
-    struct snake *snake = snakes[s];
-
+void update_world(world *w) {
+  linked_list * snakes_ll_node = w->snakes_ll_head;
+  while (snakes_ll_node != NULL) {
+    struct snake *snake = snakes_ll_node->value;
     direction snake_direction = ask_direction(snake);
-    struct vector new_head_position = neighbour(snake->head.position, snake_direction);
-    if (is_out_of_bounds(new_head_position)) {
-      /* @TODO: REMOVE SNAKE */
-      continue;
+    if (update_snake(w, snake, snake_direction) == 1) {
+      // Snake died. But this is OK.
+    }
+    snakes_ll_node = snakes_ll_node->next;
+  }
+
+  collision_detection(w);
+
+  snakes_ll_node = w->snakes_ll_head;
+  while (snakes_ll_node != NULL) {
+    struct snake *snake = snakes_ll_node->value;
+    snakes_ll_node = snakes_ll_node->next;
+    if (snake->dead) {
+      remove_snake(snake);
+    }
+  }
+}
+
+int update_snake(world *w, snake *snake, direction snake_direction) {
+  struct vector new_head_position = neighbour(((snake_segment *) snake->segments_ll_head->value)->position, snake_direction);
+  if (is_out_of_bounds(&w->grid, new_head_position)) {
+    snake->dead = 1;
+    return 1;
+  }
+
+  /* Move each segment forward by 1. */
+  linked_list * ll_segment = snake->segments_ll_head;
+  while (ll_segment->next != NULL) {
+    vector segment_position = ((snake_segment *) ll_segment->value)->position;
+    ll_segment = ll_segment->next;
+    ((snake_segment *) ll_segment->value)->position = segment_position;
+  }
+
+  /* Update the head segment position. */
+  ((snake_segment *) snake->segments_ll_head->value)->position = new_head_position;
+  return 0;
+}
+
+int heads_collided(snake *s1, snake *s2) {
+  vector s1_position = ((snake_segment *) s1->segments_ll_head->value)->position;
+  vector s2_position = ((snake_segment *) s2->segments_ll_head->value)->position;
+  return (s1 != s2 && vectors_equal(s1_position, s2_position));
+}
+
+int segment_at_position(snake *s, vector position) {
+  linked_list * segments_ll_node = s->segments_ll_head;
+  while (segments_ll_node != NULL) {
+    vector segment_position = ((snake_segment *) segments_ll_node->value)->position;
+    if (vectors_equal(position, segment_position)) {
+      return 1;
+    }
+    segments_ll_node = segments_ll_node->next;
+  }
+  return 0;
+}
+
+void collision_detection(world *w) {
+  // This can be optimised somewhat, to avoid duplicate checks and already-dead checks.
+  // However care is needed to avoid allowing self-collision or unfair survival.
+  linked_list * snakes_ll_node = w->snakes_ll_head, * snakes_ll_collision_node;
+  while (snakes_ll_node != NULL) {
+    snake * s = snakes_ll_node->value;
+
+    snakes_ll_collision_node = w->snakes_ll_head;
+    while (snakes_ll_collision_node != NULL) {
+      snake * collision_snake = snakes_ll_collision_node->value;
+
+      if (heads_collided(s, collision_snake)) {
+        s->dead = collision_snake->dead = 1;
+        break;
+      }
+
+      if (segment_at_position(collision_snake, ((snake_segment *) s->segments_ll_head->value)->position)) {
+        s->dead = 1;
+        break;
+      }
     }
 
-    /* Move each segment forward by 1. */
-    struct snake_segment *current_segment = snake->head;
-    while (current_segment->next != NULL) {
-      current_segment->next.position = current_segment->position;
-      current_segment = current_segment->next;
-    }
-    /* Update the head segment position. */
-    snake->head.position = new_head_position;
+    snakes_ll_node = snakes_ll_node->next;
   }
-
-  /* @TODO: Collision detection. What are the rules for collisions? */
-
-  /*
-  CHECK FOR COLLISIONS
-  if (is_out_of_bounds(new_head_cell)) {
-    snakes_to_remove = prepend(grid0[x][y]->snake_id, snakes_to_remove);
-    continue;
-  }
-  if (grid1[new_head_cell.x][new_head_cell.y]) {
-    collision
-    snakes_to_remove = prepend(grid0[x][y]->snake_id, snakes_to_remove);
-    continue;
-  }
-  if (grid2[new_head_cell.x][new_head_cell.y]) {
-    head on collision
-    snakes_to_remove = prepend(grid0[x][y]->snake_id, snakes_to_remove);
-    snakes_to_remove = prepend(grid2[new_head_cell.x][new_head_cell.y]->snake_id, snakes_to_remove);
-    continue;
-  }
-  destroy(snakes_to_remove);
-  */
 }
 
 int main() {

@@ -1,7 +1,6 @@
-
 typedef struct linked_list {
   void * value;
-  struct linked_list * next;
+  struct linked_list * next, * previous;
 } linked_list;
 
 linked_list * new();
