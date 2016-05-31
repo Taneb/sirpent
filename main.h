@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#include "list.h"
+#include "udp_list/list.h"
 #include "grid.h"
 
 #define GRID_SIZE 300
@@ -11,13 +11,13 @@ typedef struct snake_segment snake_segment;
 
 struct world {
   grid grid;
-  linked_list * snakes_ll_head;
+  list(snake, snakes);
 };
 
 struct snake {
   /*struct player *player;*/
-  linked_list * segments_ll_head, * segments_ll_tail;
   int length, dead;
+  list(snake_segment, segments);
 };
 
 struct snake_segment {
