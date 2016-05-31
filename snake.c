@@ -4,8 +4,17 @@ void update_snake(snake * s, direction snake_direction) {
   struct vector new_head_position = neighbour(list_elem_front(s->segments)->position, snake_direction);
 
   /* Move each segment forward by 1. */
+  int flag = 1; /* we use this to skip the head */
+  vector position;
   list_each_elem (list_elem_next(s->segments), segment) {
-    segment->position = list_elem_prev(segment)->position;
+    vector tmp = segment->position;
+    if (flag) {
+      flag = 0;
+      position = tmp;
+      continue;
+    }
+    segment->position = position;
+    position = tmp;
   }
 
   /* Update the head segment position. */
