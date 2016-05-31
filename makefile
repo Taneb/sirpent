@@ -1,11 +1,11 @@
-sirpent : main.o list.o world.o snake.o vector.o
-	cc -o sirpent main.o list.o world.o snake.o vector.o
+sirpent : main.o list.o world.o snake.o vector.o render.o
+	cc -o sirpent main.o list.o world.o snake.o vector.o render.o -lX11
 
 main.o : main.c udp_list/list.h world.h snake.h
 	cc -c main.c --std=gnu99
 
 list.o : udp_list/list.c udp_list/list.h
-	cc -c udp_list/list.c  --std=gnu99
+	cc -c udp_list/list.c --std=gnu99
 
 vector.o : vector.c vector.h
 	cc -c vector.c --std=gnu99
@@ -16,5 +16,8 @@ world.o : world.c world.h snake.h vector.h
 snake.o : snake.c snake.h world.h vector.h
 	cc -c snake.c --std=gnu99
 
+render.o : render.c render.h world.h vector.h
+	cc -c render.c --std=gnu99
+
 clean :
-	rm sirpent main.o list.o world.o snake.o
+	rm sirpent main.o list.o world.o snake.o vector.o render.o

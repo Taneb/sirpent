@@ -6,7 +6,7 @@ void update_snake(snake * s, direction snake_direction) {
   /* Move each segment forward by 1. */
   int flag = 1; /* we use this to skip the head */
   vector position;
-  list_each_elem (list_elem_next(s->segments), segment) {
+  list_each_elem (s->segments, segment) {
     vector tmp = segment->position;
     if (flag) {
       flag = 0;
